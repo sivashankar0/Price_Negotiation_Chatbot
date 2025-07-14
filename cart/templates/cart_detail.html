@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Cart</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    {% load static %}
+    <style>
+        .text-black {
+            color: #000 !important;
+        }
+
+        .fw-normal {
+            font-weight: 400 !important;
+        }
+
+        .rounded-3 {
+            border-radius: 1 !important;
+        }
+
+        .img-fluid {
+            max-width: 100%;
+            height: auto;
+        }
+
+
+        .form-control {
+            min-width: 0;
+            width: auto;
+            flex: 1 1 auto;
+        }
+
+        .form-control-lg {
+            padding: .5rem 1rem;
+            font-size: 1.25rem;
+            border-radius: .3rem;
+        }
+
+        .btn-link {
+            color: #0d6efd;
+            text-decoration: none;
+        }
+
+        .btn-link:hover {
+            color: #0a58ca;
+            text-decoration: underline;
+        }
+
+        .btn-warning {
+            color: #fff;
+            background-color: #ffc107;
+            border-color: #ffc107;
+        }
+
+        .btn-outline-warning {
+            color: #ffc107;
+            border-color: #ffc107;
+        }
+
+        .btn-outline-warning:hover {
+            color: #212529;
+            background-color: #ffc107;
+            border-color: #ffc107;
+        }
+
+        .fa-lg {
+            font-size: 1.5em;
+        }
+
+        button {
+            background-color: rgba(234, 248, 40, 0.8);
+            color: black;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        img {
+            height: 30px;
+            width: 30px;
+        }
+
+
+        .increase {
+            background-color: rgb(195, 245, 195) !important;
+            color: black;
+        }
+
+        .decrease {
+            background-color: rgb(250, 171, 171) !important;
+            color: black;
+        }
+
+        .container-fluid {
+            padding-left: 30px;
+            padding-right: 30px;
+        }
+
+        .row-no-padding {
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        .col-no-padding {
+            padding-left: 0;
+            padding-right: 0;
+        }
+        .grandtotal{
+            padding-bottom: 215px;
+            margin-top: 58px;
+        }
+    </style>
+</head>
+<body>
+    <section>
+        {% include 'navbar.html' %}
+        <div class="container-fluid py-5">
+            <div class="row row-no-padding">
+                <div class="col-8 col-no-padding">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3 class="fw-normal mb-0 text-black">Shopping Cart</h3>
+                    </div>
+                    {% for item in cart_items %}
+                    <div class="card rounded-3 ">
+                        <div class="card-body ">
+                            <div class="row d-flex justify-content-between align-items-center">
+                                <div class="col-md-2 col-lg-2 col-xl-2">
+                                    <img src="{{ item.product.image }}" class="img-fluid rounded-3" alt="{{ item.product.title }}">
+                                </div>
+                                <div class="col-md-3 col-lg-3 col-xl-3">
+                                    <p class="lead fw-normal mb-2">{{ item.product.title }}</p>
+                                </div>
+                                <div class="col-md-3 col-lg-3 col-xl-2 d-flex">
+                                    <form class="change-qty" method="post" action="{% url 'remove_from_cart' item.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" name="action" class='decrease' value="decrease">-</button>
+                                        <span class="item-quantity"> {{ item.quantity }} </span>
+                                        <button type="submit" name="action" class='increase' value="increase">+</button>
+                                    </form>
+                                </div>
+                                <div class="col-md-3 col-lg-2 col-xl-2 offset-lg-1">
+                                    <h5 class="mb-0 cart-total">${{ item.cartTotal }}</h5>
+                                </div>
+                                <div class="col-md-1 col-lg-1 col-xl-1 text-end">
+                                    <form method="post" action="{% url 'remove_from_cart' item.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" name="action" value="remove" class="btn btn-link text-danger">
+                                            <img src="{% static 'trash.jpg' %}" alt="">
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="col-4">
+                    <div class="card grandtotal">
+                        <div class="card-body p-5">
+                            <h1 class="grandtot" style="text-align: center;">Total ${{ grandtotal|floatformat:2 }}</h1>
+                        </div>
+                    </div>
+                    <div class="card proceed">
+                        <div class="card-body">
+                            <a href="/chat"><button type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-warning btn-block btn-lg">Proceed to Negotiate</button></a>
+                            <a href="/"><button type="button" style="margin-top: 10px;"  data-mdb-ripple-init class="btn btn-success btn-block btn-lg">Proceed to Pay</button></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+        $('.change-qty').on('submit', function(event) {
+            event.preventDefault();  // Prevent the form from submitting the traditional way
+            var $form = $(this);  // Use $(this) to refer to the current form
+
+            // Find the clicked button
+            var actionValue = $form.find('button[type=submit][clicked=true]').val();
+            
+            // Append the action to the serialized form data
+            var formData = $form.serialize() + '&action=' + actionValue;
+
+            $.ajax({
+                type: 'POST',
+                url: $form.attr('action'),
+                data: formData,  // Send the form data with action included
+                success: function(response) {
+                    // Handle the response here
+                    console.log(response);
+                    if (response.new_quantity > 0) {
+                        // alert('Cart updated successfully!');
+                        // Update the quantity displayed
+                        $form.find('.item-quantity').text(response.new_quantity);
+                        // Update the grandtotal displayed
+                        
+                        // Update the cart total displayed
+                        $form.closest('.row').find('.cart-total').text('$' + response.new_cart_total);
+                    } else {
+                        alert('Item removed from cart.');
+                        // Optionally, you can remove the form or item row from the DOM
+                        $form.closest('.item-row').remove(); // Assuming you have a wrapper for each item
+                    }
+                    $('.grandtot').text('Total $' + response.grandtotal);
+                },
+                error: function(error) {
+                    console.log(error);
+                    alert('There was an error updating the cart.');
+                }
+            });
+        });
+
+        // Add a click event to set 'clicked=true' on the clicked button
+        $('.change-qty button[type=submit]').click(function() {
+            $('button[type=submit]', $(this).parents('form')).removeAttr('clicked');
+            $(this).attr('clicked', 'true');
+        });
+    });
+    
+    </script>
+                 
+</body>
+</html>

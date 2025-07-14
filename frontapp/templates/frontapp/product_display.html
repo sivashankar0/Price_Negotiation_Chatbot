@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product List</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    {% load static %}
+    <style>
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.7);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            top: 0;
+            z-index: 1000;
+            padding: 8px 16px;
+        }
+        .header h2 {
+            margin: 0;
+            color: #fff;
+            font-family:'Fantasy';
+        }
+        .logout {
+            /* background-color: red; */
+            color: white !important;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .product-list {
+            padding: 50px;
+            padding-top: 100px;
+            margin: 0 auto;
+        }
+        .product-container {
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            color: #fff;
+            height: 250px; /* Set a fixed height for consistency */
+        }
+        
+        .product-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .product-image {
+            width: 100px;
+            height: 100px;
+            margin-right: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #fff;
+            border: 1px solid #e7ff89;
+        }
+        .product-details {
+            flex-grow: 1;
+        }
+        .product-price {
+            font-size: 1.5em;
+            color: #e74c3c;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .image-container {
+            width: 100px;
+            height: 100px;
+            overflow: hidden;
+            margin-right: 20px;
+        }
+        .image-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .product-title {
+            font-size: 1.5em;
+            color: #fff;
+        }
+        .product-title:hover {
+            color: #007BFF;
+        }
+        .add-to-cart {
+            background-color: rgba(234, 248, 40, 0.8);
+            color:black
+
+
+        }
+
+
+    </style>
+</head>
+<body>
+    {% include 'navbar.html' %}
+    <div class="container product-list">
+        <div class="row">
+            {% for product in products %}
+            <div class="col-md-6 col-lg-4">
+                <div class="product-container">
+                    <div class="image-container">
+                        <img class="img-thumbnail" src="{{ product.image }}" alt="Product Image">
+                    </div>
+                    <div class="product-details">
+                        <p class="product-title">{{ product.title }}</p>
+                        <p class="product-price">${{ product.listed_price }}</p>
+                        
+                            <form class="addToCartForm" method="post" action="{% url 'add_to_cart' product.id %}">
+                                {% csrf_token %}
+                                <button class='add-to-cart' type="submit">Add to Cart</button>
+                            </form>
+                        
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.addToCartForm').on('submit', function(event) {
+                event.preventDefault();  // Prevent the form from submitting the traditional way
+                var $form = $(this);  // Use $(this) to refer to the current form
+                var $submitButton = $form.find('button[type="submit"]'); 
+                $.ajax({
+                    type: 'POST',
+                    url: $form.attr('action'),
+                    data: $form.serialize(),  // Serialize the form data
+                    success: function(response) {
+                        // Handle the response here
+                        console.log('Product added to cart successfully!');
+                        var alertMessage = $('<div style="color:#98FF98;">Added to Cart</div>')
+                        .text(response.message);
+
+                        // Insert the alert message after the submit button
+                        alertMessage.insertAfter($submitButton);
+                    // Automatically remove the alert after 0.5 seconds
+                    setTimeout(function() {
+                        alertMessage.fadeOut('fast', function() {
+                            $(this).remove();
+                        });
+                    }, 500);
+                    },
+                    error: function(error) {
+                        console.log(error);
+                        alert('There was an error adding the product to the cart.');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
